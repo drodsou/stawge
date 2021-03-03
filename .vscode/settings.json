@@ -1,0 +1,8 @@
+{
+  "search.exclude": {
+    "**/.git": true,
+  },
+  "deno.enable": true,
+  "deno.lint": true,
+  "liveServer.settings.root" : "/example/dist"
+}
