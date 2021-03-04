@@ -1,7 +1,7 @@
 import {watch} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/watch_throttled/mod.ts';
 import {unindent} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/unindent/mod.ts';
-// import {runCmd} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/run_cmd/mod.ts';
 
+import init from './init.js';
 import build from './build.js';
 
 const VERSION="0.1";
@@ -31,8 +31,8 @@ if (['help'].includes(Deno.args[0])) {
 
 // -- init
 if (Deno.args[0] === 'init') {
-  console.log('init not yet implemented');
-  Deno.exit(1);
+  await init();
+  Deno.exit(0);
 } 
 
 if (Deno.args[0] === 'build') {
