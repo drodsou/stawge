@@ -13,7 +13,7 @@ export default async function init() {
   const tmpDir = Deno.makeTempDirSync({prefix: 'stawge'});
   
   console.log('downloading template');
-  const zip = await fetch('https://raw.githubusercontent.com/drodsou/stawge/master/example.zip');
+  const zip = await fetch('https://raw.githubusercontent.com/drodsou/stawge/main/example.zip?' + Math.random());
   const zipBuffer = await zip.arrayBuffer();
   const destFile = slashJoin(tmpDir, '/stawge-example.zip');
   Deno.writeFileSync(destFile, new Uint8Array(zipBuffer) );

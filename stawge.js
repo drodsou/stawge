@@ -3,8 +3,9 @@ import {unindent} from 'https://raw.githubusercontent.com/drodsou/denolib/master
 
 import init from './init.js';
 import build from './build.js';
+import VERSION from './version.js';
 
-const VERSION="0.2";
+
 
 // -- version
 if (['version', '-v', '--version'].includes(Deno.args[0])) {
