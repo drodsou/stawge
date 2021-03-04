@@ -16,6 +16,17 @@ maybe
 - watch build
 - no single exec (damn, no imports from executable...)
 
+## getting started
+
+- install deno: https://deno.land/#installation
+- install stawge: `deno install -fA --reload https://raw.githubusercontent.com/drodsou/stawge/main/stawge.js`
+- add `~/.deno/bin` to path
+- `mkdir new-dir && cd new-dir`
+- initialize project structure: `stawge init`
+- start Visual Studio Code or other text editor `code .`
+- build and watch to automaticall rebuild on: `stawge`
+- use some live server to view `dist/` folder
+
 ## basic use
 - stawge init
 - stawge 
