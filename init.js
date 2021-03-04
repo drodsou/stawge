@@ -32,7 +32,7 @@ export default async function init() {
 
   console.log('copying' );
   // copyDirSyncFilter(slashJoin(tmpDir, '/stawge-master/default'), Deno.cwd());
-  copyDirSyncFilter(tmpDir, Deno.cwd());
+  copyDirSyncFilter(slashJoin(tmpDir, '/example'), Deno.cwd());
 
   console.log('cleaning tmp');
   Deno.removeSync(tmpDir, { recursive: true });
