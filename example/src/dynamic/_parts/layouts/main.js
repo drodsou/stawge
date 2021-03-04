@@ -11,8 +11,17 @@ export default function (props) {
   ${props.head||''}
 </head>
 <body>
-  <nav></nav>
-  ${props.body||''}
+  <nav> 
+    <div class="logo">logo</div>
+    <ul class="menu">
+      <li><a href="/home">home</a></li>
+      <li><a href="/about">about</a></li>
+      <li><a href="/blog">blog</a></li>
+    </ul>
+  </nav>
+  <div class="main-container">
+    ${props.body||''}
+  </div>
 </body>
 </html>
 

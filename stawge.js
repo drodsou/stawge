@@ -45,5 +45,6 @@ else {
   build();
   watch({dirs:['src'], exclude:[], fn: async (dirs)=>{
     await build();
+  
   }});
 }

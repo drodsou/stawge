@@ -1,21 +1,20 @@
 # todo
-- single exec (damn no user imports...)
-- more interesting example
+- rootUrl (add to layout as variable)
+- better example
 - stawge init
-- move to github drodsou/stawge and stawge to stawge-mega
 
 maybe
+- auto generate .md ?
+- auto clean dist dir? danger!
 - incremental (check dependencies against allGenerated?)
 - less verbose build watch
 - stream generate, allGenerated in memory without content?
-- auto clean dist dir? danger!
-- auto generate .md ?
-
 
 # docs
 
 ## done
 - watch build
+- no single exec (damn, no imports from executable...)
 
 ## basic use
 - stawge init
@@ -28,6 +27,8 @@ that can return or a string or [{file, content},...]
 
 that function receives parameter {util}
 
+dynamic/_parts must be imported with util.importPart to prevent import caching
+
 ## change /dist dir
 optionally change dist dir in stawgeConfig.js
 ```js
@@ -35,6 +36,13 @@ export default {
   dist : 'build/cntg'
 }
 ```
+
+## vscode
+- es6-string-html
+- es6-string-css
+- es6-string-markdown
+- es6-string-html
+- vs color picker (pick coler in string css
 
 ## change base url in live server
 if using VSCode Live Server Extension, change the base url of the http server in `.vscode/settings.json` so you dirs folder is `/` in the url for example:

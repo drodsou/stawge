@@ -1,10 +1,10 @@
-import layoutMain from '../_parts/layouts/main.js';
-import layoutPost from '../_parts/layouts/post.js';
 import marked from 'https://unpkg.com/marked@1.0.0/lib/marked.esm.js'
 import mdParts from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/markdown/md_parts.ts'
 
+export default async function(util) {
 
-export default function(util) {
+  const layoutMain = await util.importPart('layouts/main.js');
+  const layoutPost = await util.importPart('layouts/post.js');
   const ret = []
   
   // -- add md pages
@@ -34,7 +34,8 @@ export default function(util) {
     content: layoutMain({
       title: 'Blog index',
       body: `
-        <ul>
+        <h1>Blog index</h1>
+        <ul class="blog-list">
           ${ret.map(r=>`
             <li><a href="./${r.url}">${r.title}</a></li>
           `).join('\n')}
