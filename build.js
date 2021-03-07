@@ -5,41 +5,35 @@ import {copyDirSyncFilter} from 'https://raw.githubusercontent.com/drodsou/denol
 import {slashJoin} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/slash_join/mod.ts';
 import {unindent} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/unindent/mod.ts';
 import {red as colorRed, green as colorGreen} from 'https://deno.land/std/fmt/colors.ts';
-import getUserConfig from './getUserConfig.js';
+
 
 /**
  * Build: copies 'src/static' to 'dist' and generates 'src/dynamic' into 'dist'
 */
-export default async function build() {
-  const userConfig = await getUserConfig();
-  const rootDir = slashJoin( Deno.cwd() );
-  const distDirRel = userConfig.dist || '/dist' 
-  const distDir = rootDir + distDirRel;
-  const srcDir = rootDir + '/src';
-  const srcdynDirRel = '/src/dynamic';
-  const srcdynDir = rootDir + '/src/dynamic';
+export default async function build(cfg) {
+  
 
   // -- user function passed argument, helpers
   const util = {
-    rootDir, distDir, srcDir,
+    rootDir: cfg.rootDir, distDir:cfg.distDir, srcDir:cfg.srcDir,
     importPart : async (part)=>{
       return (await import('file://' 
-        + srcDir + '/dynamic/_parts/' 
+        + cfg.srcDir + '/dynamic/_parts/' 
         + part + '?' + Math.random()
       )).default;
     }
   }
 
-  console.log(colorGreen(`• Copying ${srcDir + '/static'} to ${distDir}`));
-  copyDirSyncFilter( srcDir + '/static', distDir);
+  console.log(colorGreen(`• Copying ${cfg.srcDir + '/static'} to ${cfg.distDir}`));
+  copyDirSyncFilter( cfg.srcDir + '/static', cfg.distDir);
 
   let srcFiles
   try {
-    srcFiles = [...walkSync(srcdynDir,{ exts:['js','ts']} )]
+    srcFiles = [...walkSync(cfg.srcdynDir,{ exts:['js','ts']} )]
       .map(e=> slashJoin( e.path))
-      .filter(page=>!(page.replace(rootDir,'')).includes('_'));
+      .filter(page=>!(page.replace(cfg.rootDir,'')).includes('_'));
   } catch (e) {
-    console.log(colorRed(`ERROR: Processing directory: ${srcdynDir}`));
+    console.log(colorRed(`ERROR: Processing directory: ${cfg.srcdynDir}`));
     Deno.exit(1)
   }
 
@@ -61,7 +55,7 @@ export default async function build() {
     let srcRes = await srcFunc(util);
     if (!Array.isArray(srcRes)) {
       srcRes = [{
-        distFile: srcFile.replace(srcdynDirRel, distDirRel).replace(/\.(js|ts)/,''), 
+        distFile: srcFile.replace(cfg.srcdynDirRel, cfg.distDirRel).replace(/\.(js|ts)/,''), 
         content: srcRes, 
         title: '',
       }]
@@ -88,9 +82,9 @@ export default async function build() {
         return;
         // Deno.exit(1);
       }
-      if (!distFile.startsWith(distDir)) {
+      if (!distFile.startsWith(cfg.distDir)) {
         console.log(colorRed(unindent(`
-          ERROR: Generated file must have absolute path to dist directory ${distDir}
+          ERROR: Generated file must have absolute path to dist directory ${cfg.distDir}
             Generated file: ' + distFile);
             From src file : ' + srcFile);
         `)));
