@@ -45,11 +45,13 @@ const userConfig = await getUserConfig();
 const cfg = {}
 cfg.version = VERSION;
 cfg.rootDir = slashJoin( Deno.cwd() );
+cfg.srcDir = cfg.rootDir + '/src';
+cfg.srcstaticDirRel = '/src/static';
+cfg.srcstaticDir = cfg.rootDir + cfg.srcstaticDirRel;
+cfg.srcdynDirRel = '/src/dynamic';
+cfg.srcdynDir = cfg.rootDir + cfg.srcdynDirRel;
 cfg.distDirRel = userConfig.dist || '/dist';
 cfg.distDir = cfg.rootDir + cfg.distDirRel;
-cfg.srcDir = cfg.rootDir + '/src';
-cfg.srcdynDirRel = '/src/dynamic';
-cfg.srcdynDir = cfg.rootDir + '/src/dynamic';
 cfg.port = 8010;
 
 
@@ -63,10 +65,11 @@ else {
   console.log('\nWatching /src...');
   await build(cfg);
   
-  watch({dirs:['src'], exclude:[], options:{throttle:20}, fn: async (changedFiles)=>{
-    console.log('changed', changedFiles)
-    await build(cfg, changedFiles);
-    httpLiveServerReload("reload");
+  watch({dirs:['src'], exclude:[], options:{throttle:50}, fn: async (changedFiles)=>{
+    let changedFile = slashJoin(changedFiles[0]);
+    console.log('changed', changedFile)
+    await build(cfg, changedFile);
+    httpLiveServerReload("reload " + changedFile.includes('.css') ? 'css' : 'js');
   }});
   // console.log(`Serving ${cfg.distDir} at localhost:${cfg.port}`);
   httpLiveServerStart({path:cfg.distDir, spa:false, port: cfg.port});

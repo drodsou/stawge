@@ -1,7 +1,2 @@
-import {httpLiveServerStart, httpLiveServerReload} from '../denolib/ts/http_live_server/mod.js'
-
-setInterval(()=>{
-  console.log('-- recarjando');
-  httpLiveServerReload("recarjando!");
-},2000);
-await httpLiveServerStart({path:'dist', spa:false});
+import * as path from "https://deno.land/std@0.89.0/path/mod.ts";
+console.log(path.dirname('/una/cosa/te/digo.css.js'));

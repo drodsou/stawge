@@ -1,5 +1,6 @@
 import {walkSync} from 'https://deno.land/std/fs/walk.ts';
 import {ensureDirSync} from 'https://deno.land/std/fs/ensure_dir.ts';
+import * as path from "https://deno.land/std@0.89.0/path/mod.ts";
 
 import {copyDirSyncFilter} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/copy_dir_sync_filter/mod.ts';
 import {slashJoin} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/slash_join/mod.ts';
@@ -10,7 +11,7 @@ import {red as colorRed, green as colorGreen} from 'https://deno.land/std/fmt/co
 /**
  * Build: copies 'src/static' to 'dist' and generates 'src/dynamic' into 'dist'
 */
-export default async function build(cfg, changedFiles=[]) {
+export default async function build(cfg, changedFile) {
   const timeStart = Date.now();  
 
   // -- user function passed argument, helpers
@@ -23,35 +24,51 @@ export default async function build(cfg, changedFiles=[]) {
       )).default;
     }
   }
-  // -- STATIC
+  // -- STATIC COPY
   
-  if (changedFiles.length >0) {
+  if (changedFile ) {
     // -- incremental copy
-    let staticChangedFiles = changedFiles.filter(f=>!f.includes(cfg.srcdynDir));
-    staticChangedFiles.forEach(f=>{
-      
-    });
+    if (changedFile.includes(cfg.srcstaticDir)) {
+      let distFile = changedFile.replace(cfg.srcstaticDir, cfg.distDir);
+      ensureDirSync(path.dirname(distFile));
+      Deno.copyFileSync(changedFile, distFile);
+      console.log(colorGreen(`• Copying incremental: ${distFile}`));
+    }
   } else {
+    // -- full copy
     console.log(colorGreen(`• Copying ${cfg.srcDir + '/static'} to ${cfg.distDir}`));
     copyDirSyncFilter( cfg.srcDir + '/static', cfg.distDir);
   }
 
-  // -- DYNAMIC
+  // -- DYNAMIC BUILD
+  let inDataFolder = (file )=> file.replace(cfg.rootDir,'').includes('_');
   let srcFiles
-  if (changedFiles.length > 0) {
-    // -- incremental
-    srcFiles = changedFiles.slice();
-  }
-
-
-  // -- complete
-  try {
-    srcFiles = [...walkSync(cfg.srcdynDir,{ exts:['js','ts']} )]
-      .map(e=> slashJoin( e.path))
-      .filter(page=>!(page.replace(cfg.rootDir,'')).includes('_'));
-  } catch (e) {
-    console.log(colorRed(`ERROR: Processing directory: ${cfg.srcdynDir}`));
-    Deno.exit(1)
+  if (changedFile) {
+    if (changedFile.includes(cfg.srcdynDir)) {
+      // -- incrementalbuild
+      if (!inDataFolder) {
+        // builder file
+        srcFiles = [changedFile]
+      } else {
+        let parentBuilderFolder = (changedFile.replace(/_[^_]*$/,''));
+        
+        srcFiles = [changedFile]
+      else if (!isJschangedFile.endsWith('.js') || changedFile.endsWith('.ts')) {
+      else {
+        srcFiles = 
+      }
+      srcFiles = changedFiles.slice();
+    }
+  } else {
+    // -- full build
+    try {
+      srcFiles = [...walkSync(cfg.srcdynDir,{ exts:['js','ts']} )]
+        .map(e=> slashJoin( e.path))
+        .filter(page=>!(page.replace(cfg.rootDir,'')).includes('_'));
+    } catch (e) {
+      console.log(colorRed(`ERROR: Processing directory: ${cfg.srcdynDir}`));
+      Deno.exit(1)
+    }
   }
 
   // TODO: ordenar con index al final
