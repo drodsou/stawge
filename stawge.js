@@ -1,6 +1,7 @@
 import {watch} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/watch_throttled/mod.ts';
 import {unindent} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/unindent/mod.ts';
-import {httpLiveServerStart, httpLiveServerReload} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/http_live_server/mod.js'
+// import {httpLiveServerStart, httpLiveServerReload} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/http_live_server/mod.js'
+import {httpLiveServerStart, httpLiveServerReload} from '../denolib/ts/http_live_server/mod.js';
 import {slashJoin} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/slash_join/mod.ts';
 
 import init from './init.js';
@@ -41,6 +42,7 @@ if (Deno.args[0] === 'init') {
 
 const userConfig = await getUserConfig();
 const cfg = {}
+cfg.version = VERSION;
 cfg.rootDir = slashJoin( Deno.cwd() );
 cfg.distDirRel = userConfig.dist || '/dist';
 cfg.distDir = cfg.rootDir + cfg.distDirRel;
@@ -60,10 +62,10 @@ else {
   console.log('\nWatching /src...');
   await build(cfg);
   
-  watch({dirs:['src'], exclude:[], fn: async (dirs)=>{
-    await build();
+  watch({dirs:['src'], exclude:[], options:{throttle:20}, fn: async (dirs)=>{
+    await build(cfg);
     httpLiveServerReload("reload");
   }});
-  console.log(`Serving ${cfg.distDir} at localhost:${cfg.port}`);
-  await httpLiveServerStart({path:cfg.disDir, spa:false, port: cfg.port});
+  // console.log(`Serving ${cfg.distDir} at localhost:${cfg.port}`);
+  httpLiveServerStart({path:cfg.distDir, spa:false, port: cfg.port});
 }

@@ -11,7 +11,7 @@ import {red as colorRed, green as colorGreen} from 'https://deno.land/std/fmt/co
  * Build: copies 'src/static' to 'dist' and generates 'src/dynamic' into 'dist'
 */
 export default async function build(cfg) {
-  
+  let timeStart = Date.now();  
 
   // -- user function passed argument, helpers
   const util = {
@@ -113,7 +113,7 @@ export default async function build(cfg) {
     })
   }
 
-  console.log('--- build done');
+  console.log(`--- build done in ${Date.now() - timeStart}ms`);
   // console.log(allGenerated.map(a=>a.file));
 
 } // build
