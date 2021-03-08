@@ -1,7 +1,8 @@
-import {watch} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/watch_throttled/mod.ts';
+//import {watch} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/watch_throttled/mod.ts';
+import {watch} from '../denolib/ts/watch_throttled/mod.ts';
 import {unindent} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/unindent/mod.ts';
-// import {httpLiveServerStart, httpLiveServerReload} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/http_live_server/mod.js'
-import {httpLiveServerStart, httpLiveServerReload} from '../denolib/ts/http_live_server/mod.js';
+import {httpLiveServerStart, httpLiveServerReload} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/http_live_server/mod.js'
+// import {httpLiveServerStart, httpLiveServerReload} from '../denolib/ts/http_live_server/mod.js';
 import {slashJoin} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/slash_join/mod.ts';
 
 import init from './init.js';
@@ -62,8 +63,9 @@ else {
   console.log('\nWatching /src...');
   await build(cfg);
   
-  watch({dirs:['src'], exclude:[], options:{throttle:20}, fn: async (dirs)=>{
-    await build(cfg);
+  watch({dirs:['src'], exclude:[], options:{throttle:20}, fn: async (changedFiles)=>{
+    console.log('changed', changedFiles)
+    await build(cfg, changedFiles);
     httpLiveServerReload("reload");
   }});
   // console.log(`Serving ${cfg.distDir} at localhost:${cfg.port}`);

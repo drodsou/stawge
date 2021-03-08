@@ -10,8 +10,8 @@ import {red as colorRed, green as colorGreen} from 'https://deno.land/std/fmt/co
 /**
  * Build: copies 'src/static' to 'dist' and generates 'src/dynamic' into 'dist'
 */
-export default async function build(cfg) {
-  let timeStart = Date.now();  
+export default async function build(cfg, changedFiles=[]) {
+  const timeStart = Date.now();  
 
   // -- user function passed argument, helpers
   const util = {
@@ -23,11 +23,28 @@ export default async function build(cfg) {
       )).default;
     }
   }
+  // -- STATIC
+  
+  if (changedFiles.length >0) {
+    // -- incremental copy
+    let staticChangedFiles = changedFiles.filter(f=>!f.includes(cfg.srcdynDir));
+    staticChangedFiles.forEach(f=>{
+      
+    });
+  } else {
+    console.log(colorGreen(`• Copying ${cfg.srcDir + '/static'} to ${cfg.distDir}`));
+    copyDirSyncFilter( cfg.srcDir + '/static', cfg.distDir);
+  }
 
-  console.log(colorGreen(`• Copying ${cfg.srcDir + '/static'} to ${cfg.distDir}`));
-  copyDirSyncFilter( cfg.srcDir + '/static', cfg.distDir);
-
+  // -- DYNAMIC
   let srcFiles
+  if (changedFiles.length > 0) {
+    // -- incremental
+    srcFiles = changedFiles.slice();
+  }
+
+
+  // -- complete
   try {
     srcFiles = [...walkSync(cfg.srcdynDir,{ exts:['js','ts']} )]
       .map(e=> slashJoin( e.path))

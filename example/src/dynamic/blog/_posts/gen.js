@@ -13,8 +13,9 @@ Torpedo tiene musho peligro benemeritaar caballo blanco caballo negroorl pecador
 Ahorarr diodeno diodenoo a peich. A gramenawer tiene musho peligro te voy a borrar el cerito fistro qué dise usteer fistro amatomaa benemeritaar mamaar. Apetecan qué dise usteer la caidita te va a hasé pupitaa benemeritaar ese hombree te va a hasé pupitaa la caidita. Al ataquerl por la gloria de mi madre ese pedazo de te voy a borrar el cerito está la cosa muy malar diodenoo. Ese pedazo de papaar papaar te voy a borrar el cerito a peich pupita tiene musho peligro llevame al sircoo quietooor. Te va a hasé pupitaa de la pradera papaar papaar amatomaa a wan jarl de la pradera no puedor. Quietooor fistro se calle ustée de la pradera está la cosa muy malar papaar papaar de la pradera tiene musho peligro benemeritaar. Torpedo tiene musho peligro benemeritaar de la pradera benemeritaar pecador. Apetecan tiene musho peligro pupita a peich a gramenawer papaar papaar diodenoo te voy a borrar el cerito la caidita ese hombree caballo blanco caballo negroorl.
 `;
 
-console.log(typeof(md))
-for (let n=0; n<10; n++) {
+let prom = []
+for (let n=0; n<3; n++) {
   let title = 'post' + n;
-  Deno.writeTextFileSync(`${Deno.cwd()}/${title}.md`, md(title) )
+  prom.push(Deno.writeTextFile(`${Deno.cwd()}/0.${title}.md`, md(title) ));
 }
+Promise.all(prom).then(()=>console.log('done'))
