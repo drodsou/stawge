@@ -24,15 +24,31 @@ export default async function build(cfg, changedFile) {
       )).default;
     }
   }
+
   // -- STATIC COPY
-  
   if (changedFile ) {
     // -- incremental copy
-    if (changedFile.includes(cfg.srcstaticDir)) {
-      let distFile = changedFile.replace(cfg.srcstaticDir, cfg.distDir);
-      ensureDirSync(path.dirname(distFile));
-      Deno.copyFileSync(changedFile, distFile);
-      console.log(colorGreen(`• Copying incremental: ${distFile}`));
+    if (changedFile.path.includes(cfg.srcstaticDir)) {
+      const distFile = changedFile.path.replace(cfg.srcstaticDir, cfg.distDir);
+
+      if (changedFile.kind === 'remove') {
+        try {
+          Deno.removeSync(distFile);
+          console.log(colorGreen(`• Removed: ${distFile}`));
+        } catch (e) {
+          console.log(colorRed(`• ERROR: Removing: ${distFile}`));
+        }
+      }
+      else {
+        try {
+          ensureDirSync(path.dirname(distFile));
+          Deno.copyFileSync(changedFile.path, distFile);
+          console.log(colorGreen(`• Copying incremental: ${distFile}`));
+        } catch (e) {
+          console.log(colorRed(`• ERROR copying incremental: ${distFile}`))
+          return;
+        }
+      }
     }
   } else {
     // -- full copy
@@ -41,23 +57,26 @@ export default async function build(cfg, changedFile) {
   }
 
   // -- DYNAMIC BUILD
-  let inDataFolder = (file )=> file.replace(cfg.rootDir,'').includes('_');
-  let srcFiles
+  const inDataFolder = (file )=> file.replace(cfg.rootDir,'').includes('/_');
+  let srcFiles = []
   if (changedFile) {
-    if (changedFile.includes(cfg.srcdynDir)) {
-      // -- incrementalbuild
-      if (!inDataFolder) {
+    if (changedFile.path.includes(cfg.srcdynDir) 
+      && !changedFile.path.includes('_test')
+    ) {
+      // -- incremental build
+      if (!inDataFolder(changedFile.path)) {
         // builder file
-        srcFiles = [changedFile]
+        srcFiles = [changedFile.path]
       } else {
-        let parentBuilderFolder = (changedFile.replace(/_[^_]*$/,''));
-        
-        srcFiles = [changedFile]
-      else if (!isJschangedFile.endsWith('.js') || changedFile.endsWith('.ts')) {
-      else {
-        srcFiles = 
+        const parentBuilderFolder = (changedFile.path.replace(/_[^_]*$/,''));
+        const parentBuilder = [...Deno.readDirSync(parentBuilderFolder)]
+          .filter(
+            d=>d.isFile 
+            && d.name.match(/(js|ts)$/) 
+            && !d.name.match(/_test/)
+          )[0].name;
+        srcFiles = [parentBuilderFolder + parentBuilder];
       }
-      srcFiles = changedFiles.slice();
     }
   } else {
     // -- full build
@@ -73,7 +92,6 @@ export default async function build(cfg, changedFile) {
 
   // TODO: ordenar con index al final
   const allGenerated = [];
-
   for (const srcFile of srcFiles) {
     const srcPath = srcFile.split('/').slice(0,-1).join('/');
     let srcFunc
@@ -86,7 +104,7 @@ export default async function build(cfg, changedFile) {
       // Deno.exit(1)
       return;
     }
-    let srcRes = await srcFunc(util);
+    let srcRes = await srcFunc(util, changedFile);
     if (!Array.isArray(srcRes)) {
       srcRes = [{
         distFile: srcFile.replace(cfg.srcdynDirRel, cfg.distDirRel).replace(/\.(js|ts)/,''), 

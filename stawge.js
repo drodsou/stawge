@@ -66,10 +66,17 @@ else {
   await build(cfg);
   
   watch({dirs:['src'], exclude:[], options:{throttle:50}, fn: async (changedFiles)=>{
-    let changedFile = slashJoin(changedFiles[0]);
+    const changedFile = changedFiles[0];
+    changedFile.path = slashJoin(changedFile.path);
+    if (changedFile.kind === 'create') {return}
+    try {
+      // changed directory, ignore
+      if (Deno.statSync(changedFile.path).isFile === false) return;
+    } catch (e) { true }
+    // -- proper file changed
     console.log('changed', changedFile)
     await build(cfg, changedFile);
-    httpLiveServerReload("reload " + changedFile.includes('.css') ? 'css' : 'js');
+    httpLiveServerReload("reload " + changedFile.path.includes('.css') ? 'css' : 'js');
   }});
   // console.log(`Serving ${cfg.distDir} at localhost:${cfg.port}`);
   httpLiveServerStart({path:cfg.distDir, spa:false, port: cfg.port});
