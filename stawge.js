@@ -53,6 +53,7 @@ cfg.srcdynDir = cfg.rootDir + cfg.srcdynDirRel;
 cfg.distDirRel = userConfig.dist || '/dist';
 cfg.distDir = cfg.rootDir + cfg.distDirRel;
 cfg.port = 8010;
+cfg.changedFiles = [];
 
 
 // -- full build, one time, no watch
@@ -94,21 +95,24 @@ try {
 
 // -- watch, incremental build on src changes, and liveserver reload
 watch({dirs:[cfg.srcDir], exclude:[], options:{throttle:50}, fn: async (changedFiles)=>{
-  const changedFile = changedFiles[0];
-  changedFile.path = slashJoin(changedFile.path);
+  console.log(changedFiles)
+  // const changedFile = changedFiles[0];
+  // changedFile.path = slashJoin(changedFile.path);
   
-  // -- incremental: ignore 'create' events
-  if (changedFile.kind === 'create') {return}
+  // // -- incremental: ignore 'create' events
+  // if (changedFile.kind === 'create') {return}
 
-  try {
-    // incremental: ignore changed directories
-    if (Deno.statSync(changedFile.path).isFile === false) return;
-  } catch (e) { true }
+  // try {
+  //   // incremental: ignore changed directories
+  //   if (Deno.statSync(changedFile.path).isFile === false) return;
+  // } catch (e) { true }
 
-  // -- incremental: changed or deleted file, do build
-  console.log(changedFile)
-  await build(cfg, changedFile);
-  httpLiveServerReload("reload " + (changedFile.path.includes('.css') ? 'css' : 'js'));
+  // // -- incremental: changed or deleted file, do build
+  // //console.log(changedFile)
+  cfg.changedFiles = changedFiles;
+  await build(cfg);
+  // httpLiveServerReload("reload " + (changedFile.path.includes('.css') ? 'css' : 'js'));
+  httpLiveServerReload("reload");
 }});
 
 // -- live server start
