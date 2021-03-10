@@ -55,29 +55,62 @@ cfg.distDir = cfg.rootDir + cfg.distDirRel;
 cfg.port = 8010;
 
 
-
+// -- full build, one time, no watch
 if (Deno.args[0] === 'build') {
-  // one time build, no watch
-  await build(cfg);
-} 
-else {
-  // default, build and watch
-  console.log('\nWatching /src...');
-  await build(cfg);
+
+  try {
+    // -- dist exists, delete?
+    Deno.statSync(cfg.distDir);
+    const answer = prompt(`Delete folder ${cfg.distDir}? (y/N) `);
+    if ((answer||'').toLowerCase() !== 'y') {
+      console.log('Aborted delete and build');
+      Deno.exit(1);
+    }
+  } catch (e) { true }
+
+  // dist does not exist
+  console.log('Deleting and building')
+  Deno.removeSync(cfg.distDir, {recursive:true});
   
-  watch({dirs:['src'], exclude:[], options:{throttle:50}, fn: async (changedFiles)=>{
-    const changedFile = changedFiles[0];
-    changedFile.path = slashJoin(changedFile.path);
-    if (changedFile.kind === 'create') {return}
-    try {
-      // changed directory, ignore
-      if (Deno.statSync(changedFile.path).isFile === false) return;
-    } catch (e) { true }
-    // -- proper file changed
-    console.log('changed', changedFile)
-    await build(cfg, changedFile);
-    httpLiveServerReload("reload " + changedFile.path.includes('.css') ? 'css' : 'js');
-  }});
-  // console.log(`Serving ${cfg.distDir} at localhost:${cfg.port}`);
-  httpLiveServerStart({path:cfg.distDir, spa:false, port: cfg.port});
+  await build(cfg);
+  Deno.exit(0);
+} 
+
+
+// -- default, build and watch
+console.log(`\nWatching ${cfg.srcDir}`);
+
+// -- initial full build?
+try {
+  Deno.statSync(cfg.distDir)
+  // -- no, as dist exists
+  console.log(`Omiting full build as dist folder already exists: ${cfg.distDir}`);
+  console.log(`(delete it or do 'stawge build' for a fuild build)`);
+} catch (e) {
+  // -- yes, as dist does not exist
+  console.log(`Doing initial full build into: ${cfg.distDir}`);
+  await build(cfg);
 }
+
+// -- watch, incremental build on src changes, and liveserver reload
+watch({dirs:[cfg.srcDir], exclude:[], options:{throttle:50}, fn: async (changedFiles)=>{
+  const changedFile = changedFiles[0];
+  changedFile.path = slashJoin(changedFile.path);
+  
+  // -- incremental: ignore 'create' events
+  if (changedFile.kind === 'create') {return}
+
+  try {
+    // incremental: ignore changed directories
+    if (Deno.statSync(changedFile.path).isFile === false) return;
+  } catch (e) { true }
+
+  // -- incremental: changed or deleted file, do build
+  console.log(changedFile)
+  await build(cfg, changedFile);
+  httpLiveServerReload("reload " + (changedFile.path.includes('.css') ? 'css' : 'js'));
+}});
+
+// -- live server start
+httpLiveServerStart({path:cfg.distDir, spa:false, port: cfg.port});
+

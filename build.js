@@ -5,7 +5,7 @@ import * as path from "https://deno.land/std@0.89.0/path/mod.ts";
 import {copyDirSyncFilter} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/copy_dir_sync_filter/mod.ts';
 import {slashJoin} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/slash_join/mod.ts';
 import {unindent} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/unindent/mod.ts';
-import {red as colorRed, green as colorGreen} from 'https://deno.land/std/fmt/colors.ts';
+import {red as colorRed, green as colorGreen, yellow as colorYellow} from 'https://deno.land/std/fmt/colors.ts';
 
 
 /**
@@ -32,6 +32,7 @@ export default async function build(cfg, changedFile) {
       const distFile = changedFile.path.replace(cfg.srcstaticDir, cfg.distDir);
 
       if (changedFile.kind === 'remove') {
+        // -- remove static file in dist
         try {
           Deno.removeSync(distFile);
           console.log(colorGreen(`• Removed: ${distFile}`));
@@ -40,6 +41,7 @@ export default async function build(cfg, changedFile) {
         }
       }
       else {
+        // -- copy changed static file to dist
         try {
           ensureDirSync(path.dirname(distFile));
           Deno.copyFileSync(changedFile.path, distFile);
@@ -51,23 +53,49 @@ export default async function build(cfg, changedFile) {
       }
     }
   } else {
-    // -- full copy
-    console.log(colorGreen(`• Copying ${cfg.srcDir + '/static'} to ${cfg.distDir}`));
-    copyDirSyncFilter( cfg.srcDir + '/static', cfg.distDir);
+    // -- full copy static to dist
+    console.log(colorGreen(`• Copying ${cfg.srcstaticDir} to ${cfg.distDir}`));
+    copyDirSyncFilter( cfg.srcstaticDir, cfg.distDir);
   }
 
-  // -- DYNAMIC BUILD
+
+  // -- DYNAMIC BUILD: GET SRC FILES
+  // TODO: refactor nested if's
   const inDataFolder = (file )=> file.replace(cfg.rootDir,'').includes('/_');
   let srcFiles = []
   if (changedFile) {
+    // -- incremental build
     if (changedFile.path.includes(cfg.srcdynDir) 
       && !changedFile.path.includes('_test')
     ) {
-      // -- incremental build
+      // -- changed file is dynamic file
       if (!inDataFolder(changedFile.path)) {
-        // builder file
-        srcFiles = [changedFile.path]
+        // -- and it is a builder file (js/ts)
+        if (changedFile.kind === 'remove') {
+          // -- that has been deleted
+          if (changedFile.path.match(/\..*\..*$/)) {
+            // -- and emits single file: delete dist file
+            const distFile = changedFile.path
+              .replace(cfg.srcdynDir, cfg.distDir)
+              .replace(/(.js|.ts)$/,'');
+            try {
+              Deno.removeSync(distFile);
+              console.log(colorGreen(`• Removed: ${distFile}`));
+            } catch (e) {
+              console.log(colorRed(`• ERROR: Removing: ${distFile}`));
+            }
+            srcFiles = [];
+          } else {
+            // -- and emits unknown files: manual delete required
+            console.log(colorYellow(`• WARNING: deleted source file ${changedFile.path} generated unknown files in ${cfg.distDir}. You must remove former results there manually or perform a full build (stawge build)`));
+            srcFiles = [];
+          }
+        } else {
+          // -- that changed
+          srcFiles = [changedFile.path]
+        }
       } else {
+        // -- and it is data file, need to find its builder file
         const parentBuilderFolder = (changedFile.path.replace(/_[^_]*$/,''));
         const parentBuilder = [...Deno.readDirSync(parentBuilderFolder)]
           .filter(
@@ -77,6 +105,9 @@ export default async function build(cfg, changedFile) {
           )[0].name;
         srcFiles = [parentBuilderFolder + parentBuilder];
       }
+    } else {
+      // -- changed file is not dynamic file
+      srcFiles = []
     }
   } else {
     // -- full build
@@ -89,6 +120,9 @@ export default async function build(cfg, changedFile) {
       Deno.exit(1)
     }
   }
+
+
+  // -- DYNAMIC BUILD: BUILD SRC FILES
 
   // TODO: ordenar con index al final
   const allGenerated = [];
@@ -104,6 +138,8 @@ export default async function build(cfg, changedFile) {
       // Deno.exit(1)
       return;
     }
+
+    // -- call .js/.ts file generator function
     let srcRes = await srcFunc(util, changedFile);
     if (!Array.isArray(srcRes)) {
       srcRes = [{
@@ -113,6 +149,7 @@ export default async function build(cfg, changedFile) {
       }]
     }
     
+    // -- for each distFile (object) returned by generator funcion
     srcRes.forEach(srcObj=>{
       srcObj.srcFile = srcFile;
       const distFile = srcObj.distFile;
@@ -154,21 +191,20 @@ export default async function build(cfg, changedFile) {
         `)));
         return;
         // Deno.exit(1);
-    }
-
+      }
 
       const distPath = distFile.split('/').slice(0,-1).join('/');
       ensureDirSync(distPath);
       console.log(colorGreen(`• Generating ${distFile}`));
       Deno.writeTextFileSync(distFile, srcObj.content);
       allGenerated[distFile] = srcObj;
-    })
-  }
+    }) // each distFile generated by one srcFile
+  } // each srcFiles
 
   console.log(`--- build done in ${Date.now() - timeStart}ms`);
   // console.log(allGenerated.map(a=>a.file));
 
-} // build
+} // build main function
 
 
 
