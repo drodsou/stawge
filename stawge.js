@@ -1,8 +1,8 @@
 //import {watch} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/watch_throttled/mod.ts';
 import {watch} from '../denolib/ts/watch_throttled/mod.ts';
 import {unindent} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/unindent/mod.ts';
-import {httpLiveServerStart, httpLiveServerReload} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/http_live_server/mod.js'
-// import {httpLiveServerStart, httpLiveServerReload} from '../denolib/ts/http_live_server/mod.js';
+// import {httpLiveServerStart, httpLiveServerReload} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/http_live_server/mod.js'
+import {httpLiveServerStart, httpLiveServerReload} from '../denolib/ts/http_live_server/mod.js';
 import {slashJoin} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/slash_join/mod.ts';
 
 import init from './init.js';
@@ -87,19 +87,7 @@ try {
 // -- watch, incremental build on src changes, and liveserver reload
 watch({dirs:[cfg.srcDir], exclude:[], options:{throttle:50}, fn: async (changedEvts)=>{
   console.log(changedEvts)
-  // const changedFile = changedFiles[0];
-  // changedFile.path = slashJoin(changedFile.path);
-  
-  // // -- incremental: ignore 'create' events
-  // if (changedFile.kind === 'create') {return}
 
-  // try {
-  //   // incremental: ignore changed directories
-  //   if (Deno.statSync(changedFile.path).isFile === false) return;
-  // } catch (e) { true }
-
-  // // -- incremental: changed or deleted file, do build
-  // //console.log(changedFile)
   cfg.changedEvts = changedEvts;
   const buildResult = await build(cfg);
   // httpLiveServerReload("reload " + (changedFile.path.includes('.css') ? 'css' : 'js'));

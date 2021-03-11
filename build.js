@@ -22,32 +22,46 @@ export default async function build(cfg) {
   }
 
   // -- incremental build
+  let built = false;
   for (const changedEvt of cfg.changedEvts) {
     const changedCase = getChangedCase(changedEvt);
     const srcType = getSrcType(cfg, changedEvt.path);
     
     console.log('*** ',srcType, changedCase, changedEvt.path);
 
-    if (changedCase === 'create') { return false; }
-    if (srcType === 'ignored') { return false; }
-
+    if (changedCase === 'create') { continue; }
+    if (srcType === 'ignored') { continue; }
+    
     if (srcType === 'static' && changedCase === 'modify') {
       copyStaticFiles(cfg, [changedEvt.path]);
+      built = true;
       continue;
     }
     if (srcType === 'static' && changedCase === 'remove' ) {
       const fileToRemove = changedEvt.path.replace(cfg.srcstaticDir, cfg.distDir);
-      removeFiles([fileToRemove]);
+      cfg.util.removeFile(fileToRemove);
+      built = true;
       continue;
     }
 
-    if (srcType === 'dynSimple') {
-      await buildDynamicFiles(cfg, [changedEvt.path], changedCase);
+    if (srcType === 'dynSimple' && changedCase === 'modify') {
+      await buildDynamicFiles(cfg);
+      built = true;
+      continue;
+    }
+
+    if (srcType === 'dynSimple' && changedCase === 'remove') {
+      const fileToRemove = changedEvt.path
+        .replace(cfg.srcdynDir, cfg.distDir)
+        .replace(/\.(js|ts)/,'');
+      cfg.util.removeFile(fileToRemove);
+      built = true;
       continue;
     }
 
     if (srcType === 'dynMulti' && changedCase === 'modify') {
-      await buildDynamicFiles(cfg, [changedEvt.path]);
+      await buildDynamicFiles(cfg, [changedEvt.path], {path: changedEvt.path, kind: changedCase});
+      built = true;
       continue;
     }
 
@@ -56,15 +70,16 @@ export default async function build(cfg) {
       continue;
     }
 
-    if (srcType === 'dynData') {
+    if (srcType === 'dynData' && (changedCase === 'modify' || changedCase === 'remove')) {
       const dataBuilder = getDataBuilder(changedEvt.path);
-      await buildDynamicFiles(cfg, [dataBuilder], changedCase);
+      await buildDynamicFiles(cfg, [dataBuilder], {path: changedEvt.path, kind: changedCase} );
+      built = true;
       continue;
     }
 
   }
-  buildDone(timeStart);
-  return true;
+  if (built) { buildDone(timeStart); }
+  return built;
 }
 
 
@@ -72,10 +87,12 @@ export default async function build(cfg) {
 // ------------------------ HELPERS
 
 // -- BUILD DYNAMIC
-export async function buildDynamicFiles (cfg, dynFiles, action='modify')  {  
-  const util = createUtil(cfg);
+export async function buildDynamicFiles (cfg, dynFiles, changedEvt)  {  
+
   const allGenerated = [];
+  let dynIndex = -1;
   for (const dynFile of dynFiles) {
+    dynIndex++;
     const srcPath = dynFile.split('/').slice(0,-1).join('/');
     let dynFunc
     try {
@@ -88,8 +105,9 @@ export async function buildDynamicFiles (cfg, dynFiles, action='modify')  {
       return;
     }
 
-    // -- call .js/.ts file generator function
-    let srcRes = await dynFunc(util, dynFile);
+    // -- call .js/.ts file builder function
+    let srcRes = await dynFunc(cfg.util, changedEvt );
+
     if (!Array.isArray(srcRes)) {
       srcRes = [{
         distFile: dynFile.replace(cfg.srcdynDirRel, cfg.distDirRel).replace(/\.(js|ts)/,''), 
@@ -142,7 +160,7 @@ export async function buildDynamicFiles (cfg, dynFiles, action='modify')  {
         // Deno.exit(1);
       }
 
-      if (action === 'modify') {
+      if (srcObj.content !== '') {
         const distPath = distFile.split('/').slice(0,-1).join('/');
         ensureDirSync(distPath);
         console.log(colorGreen(`• Generating ${distFile}`));
@@ -155,17 +173,7 @@ export async function buildDynamicFiles (cfg, dynFiles, action='modify')  {
   } // each dynFiles
 }
 
-export function createUtil (cfg) {
-  return {
-    rootDir: cfg.rootDir, distDir:cfg.distDir, srcDir:cfg.srcDir,
-    importPart : async (part)=>{
-      return (await import('file://' 
-        + cfg.srcDir + '/dynamic/_parts/' 
-        + part + '?' + Math.random()
-      )).default;
-    }
-  }
-}
+
 
 /**
  */
@@ -252,16 +260,7 @@ export function copyStaticFiles (cfg, staticFiles) {
   }
 }
 
-export function removeFiles(files) {
-  for (const file of files) {
-    try {
-      Deno.removeSync(file);
-      console.log(colorGreen(`• Removed: ${file}`));
-    } catch (e) {
-      console.log(colorRed(`• ERROR: Removing: ${file}`));
-    }
-  }
-}  
+  
 
 
 export function getAllDynamicFiles (cfg) {

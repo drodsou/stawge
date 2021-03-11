@@ -1,3 +1,13 @@
+/*
+tests: static
+- create test.html (ignored)
+- modify test.html (copied)
+  - modify again (copied + browser refresh)
+- rename test.html to test2.html (same on dist)
+- delete test.html (same dist)
+
+*/
+
 import build, {getAllStaticFiles, getAllDynamicFiles} from './build.js';
 import getConfig from './getConfig.js'
 

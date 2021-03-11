@@ -1,5 +1,7 @@
 import {slashJoin} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/slash_join/mod.ts';
 import {red as colorRed, green as colorGreen} from 'https://deno.land/std/fmt/colors.ts';
+import marked from 'https://unpkg.com/marked@1.0.0/lib/marked.esm.js';
+import mdParts from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/markdown/md_parts.ts';
 import VERSION from './version.js';
 
 export default async function getConfig() {
@@ -16,8 +18,33 @@ export default async function getConfig() {
   cfg.distDir = cfg.rootDir + cfg.distDirRel;
   cfg.port = 8010;
   cfg.changedEvts = [];
+  cfg.util = createUtil(cfg);
 
   return cfg;
+}
+
+/**/
+function createUtil (cfg) {
+  return {
+    rootDir: cfg.rootDir, distDir:cfg.distDir, srcDir:cfg.srcDir, srcDynamicDir: cfg.srcdynDir,
+    importPart : async (part)=>{
+      return (await import('file://' 
+        + cfg.srcdynDir + '/_parts/' 
+        + part + '?' + Math.random()
+      )).default;
+    },
+    removeFile : (file) => {
+      try {
+        Deno.removeSync(file);
+        console.log(colorGreen(`• Removed: ${file}`));
+      } catch (e) {
+        console.log(colorRed(`• ERROR: Removing: ${file}`));
+      }
+    },
+    marked: marked,
+    mdTitle: (md)=>md.trim().match(/\# (.*)/)[1],
+    mdParts: mdParts
+  }
 }
 
 
