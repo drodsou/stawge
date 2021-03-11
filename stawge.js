@@ -7,12 +7,13 @@ import {slashJoin} from 'https://raw.githubusercontent.com/drodsou/denolib/maste
 
 import init from './init.js';
 import build from './build.js';
-import VERSION from './version.js';
-import getUserConfig from './getUserConfig.js';
+import getConfig from './getConfig.js';
+
+const cfg = await getConfig();
 
 // -- version
 if (['version', '-v', '--version'].includes(Deno.args[0])) {
-  console.log('Stawge v' + VERSION);
+  console.log('Stawge v' + cfg.version);
   console.log('Deno static website generator')
   console.log('https://github.com/drodsou/stawge')
   Deno.exit(0);
@@ -41,19 +42,9 @@ if (Deno.args[0] === 'init') {
 
 // ------ BUILD
 
-const userConfig = await getUserConfig();
-const cfg = {}
-cfg.version = VERSION;
-cfg.rootDir = slashJoin( Deno.cwd() );
-cfg.srcDir = cfg.rootDir + '/src';
-cfg.srcstaticDirRel = '/src/static';
-cfg.srcstaticDir = cfg.rootDir + cfg.srcstaticDirRel;
-cfg.srcdynDirRel = '/src/dynamic';
-cfg.srcdynDir = cfg.rootDir + cfg.srcdynDirRel;
-cfg.distDirRel = userConfig.dist || '/dist';
-cfg.distDir = cfg.rootDir + cfg.distDirRel;
-cfg.port = 8010;
-cfg.changedFiles = [];
+
+
+// TODO: getcfg, build_test, typescript
 
 
 // -- full build, one time, no watch
@@ -94,8 +85,8 @@ try {
 }
 
 // -- watch, incremental build on src changes, and liveserver reload
-watch({dirs:[cfg.srcDir], exclude:[], options:{throttle:50}, fn: async (changedFiles)=>{
-  console.log(changedFiles)
+watch({dirs:[cfg.srcDir], exclude:[], options:{throttle:50}, fn: async (changedEvts)=>{
+  console.log(changedEvts)
   // const changedFile = changedFiles[0];
   // changedFile.path = slashJoin(changedFile.path);
   
@@ -109,10 +100,10 @@ watch({dirs:[cfg.srcDir], exclude:[], options:{throttle:50}, fn: async (changedF
 
   // // -- incremental: changed or deleted file, do build
   // //console.log(changedFile)
-  cfg.changedFiles = changedFiles;
-  await build(cfg);
+  cfg.changedEvts = changedEvts;
+  const buildResult = await build(cfg);
   // httpLiveServerReload("reload " + (changedFile.path.includes('.css') ? 'css' : 'js'));
-  httpLiveServerReload("reload");
+  if (buildResult) { httpLiveServerReload("reload"); }
 }});
 
 // -- live server start
