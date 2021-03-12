@@ -1,2 +1,12 @@
-import * as path from "https://deno.land/std@0.89.0/path/mod.ts";
-console.log(path.basename('/uno/dos').includes('.'))
+//import redaxios from 'https://cdn.skypack.dev/redaxios';
+
+try {
+let data = await (fetch('https://api.lyrics.ovh/v1/Pink Floyd/Time').then(r=>r.json()));
+
+
+console.log(data)
+} catch (e) {
+  console.log('error', e);
+}
+
+;

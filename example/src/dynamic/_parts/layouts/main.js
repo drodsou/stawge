@@ -16,7 +16,7 @@ export default function (props) {
     <ul class="menu">
       <li><a href="/home">home</a></li>
       <li><a href="/blog">blog</a></li>
-      <li><a href="/data">data</a></li>
+      <li><a href="/multi">multi</a></li>
     </ul>
   </nav>
   <div class="main-container">
