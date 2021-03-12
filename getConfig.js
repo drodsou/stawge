@@ -2,6 +2,7 @@ import {slashJoin} from 'https://raw.githubusercontent.com/drodsou/denolib/maste
 import {red as colorRed, green as colorGreen} from 'https://deno.land/std/fmt/colors.ts';
 import marked from 'https://unpkg.com/marked@1.0.0/lib/marked.esm.js';
 import mdParts from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/markdown/md_parts.ts';
+import {ensureDirSync} from 'https://deno.land/std/fs/ensure_dir.ts';
 import VERSION from './version.js';
 
 export default async function getConfig() {
@@ -32,6 +33,12 @@ function createUtil (cfg) {
         + cfg.srcdynDir + '/_parts/' 
         + part + '?' + Math.random()
       )).default;
+    },
+    generateFile: (distFile, content) =>{
+      const distPath = distFile.split('/').slice(0,-1).join('/');
+      ensureDirSync(distPath);
+      console.log(colorGreen(`• Generating ${distFile}`));
+      Deno.writeTextFileSync(distFile, content);
     },
     removeFile : (file) => {
       try {

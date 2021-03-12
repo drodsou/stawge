@@ -10,7 +10,7 @@ export default async function(util) {
 var myDate = '20210101';  // await fetch from somewhere
 var bodymd = /*md*/`
 
-# about
+# post one
 
 From markdown on ${myDate}
 
