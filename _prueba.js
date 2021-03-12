@@ -1,12 +1,5 @@
-//import redaxios from 'https://cdn.skypack.dev/redaxios';
+import {pathSort} from './build.js';
 
-try {
-let data = await (fetch('https://api.lyrics.ovh/v1/Pink Floyd/Time').then(r=>r.json()));
+let x = ["/a/b", "/z/b/c/d", "/index.html", "/tomates/verdes/fritos"]
 
-
-console.log(data)
-} catch (e) {
-  console.log('error', e);
-}
-
-;
+console.log(x.sort(pathSort))

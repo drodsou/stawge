@@ -145,11 +145,22 @@ export function copyStaticFiles (cfg, staticFiles) {
   }
 }
 
+export function pathSort (a,b) {
+  // -- "/a/b/c/d"  => "05d"
+  const sortConv = str => str.split('/').length.toString().padStart(2,"0") 
+    + str.split('/').slice(-1);
+
+  return sortConv(a) > sortConv(b) ? -1 : 1;
+}
+
 export function getAllDynamicFiles (cfg) {
   try {
+    // all /dynamic .js|.ts files not in a path with '_' 
+    // sorted from deeper path to shallower, so summary pages are processed last
     const dynFiles = [...walkSync(cfg.srcdynDir,{ exts:['js','ts']} )]
       .map(e=> slashJoin( e.path))
-      .filter(page=>!(page.replace(cfg.rootDir,'')).includes('_'));
+      .filter(page=>!(page.replace(cfg.rootDir,'')).includes('_'))
+      .sort(pathSort);
     return dynFiles;
   } catch (e) {
     console.log(colorRed(`ERROR: Processing directory: ${cfg.srcdynDir}`));
