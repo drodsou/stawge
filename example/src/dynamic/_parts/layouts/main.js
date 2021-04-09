@@ -15,11 +15,13 @@ export default function (props) {
     <div class="logo">logo</div>
     <ul class="menu">
       <li><a href="/home">home</a></li>
+      <li><a href="/about">about</a></li>
       <li><a href="/blog">blog</a></li>
       <li><a href="/multi">multi</a></li>
     </ul>
   </nav>
   <div class="main-container">
+    <h1>${props.title}</h1>
     ${props.body||''}
   </div>
 </body>

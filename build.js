@@ -3,7 +3,6 @@ import {ensureDirSync} from 'https://deno.land/std/fs/ensure_dir.ts';
 import * as path from "https://deno.land/std@0.89.0/path/mod.ts";
 
 import {slashJoin} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/slash_join/mod.ts';
-import {unindent} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/unindent/mod.ts';
 import {red as colorRed, green as colorGreen, yellow as colorYellow} from 'https://deno.land/std/fmt/colors.ts';
 
 /**
@@ -11,6 +10,7 @@ import {red as colorRed, green as colorGreen, yellow as colorYellow} from 'https
 */
 export default async function build(cfg) {
   const timeStart = Date.now();  
+  cfg.importRound++;  // un-cache imports, but only once for all files in this build
 
   // -- full build
   if ( cfg.changedEvts.length === 0 
@@ -80,15 +80,26 @@ export async function buildDynamicFiles (cfg, dynFiles, changedEvt)  {
 
   for (const dynFile of dynFiles) {
     const srcPath = dynFile.split('/').slice(0,-1).join('/');
-    let dynFunc
+    let dynFunc, dynRes
     try {
-      dynFunc = (await import('file://' + dynFile + '?' + Math.random())).default;
-      if (typeof(dynFunc) !== 'function') 
-        throw new Error(`File must 'export default' a function`);
+      if (dynFile.endsWith('.md')) {
+        // -- .md file
+        dynRes = await processMD(cfg, Deno.readTextFileSync(dynFile))
+      } else {
+        // -- .js/.ts file
+        dynFunc = (await import('file://' + dynFile + '?' + Math.random())).default;
+        if (typeof(dynFunc) !== 'function') 
+          throw new Error(`File must 'export default' a function`);
 
-      // -- call .js/.ts file builder function
-      let srcRes = await dynFunc(cfg.util, changedEvt );
-      cfg.util.generateFile(getDynDistFile(cfg, dynFile), srcRes);        
+        // -- call .js/.ts file builder function
+        dynRes = await dynFunc(cfg.util, changedEvt );
+        if (typeof dynRes === "string" && dynFile.endsWith(".md.js")) {
+          // -- .js/.ts returned a MD
+          dynRes = await processMD(cfg, dynRes)
+        }
+      }
+
+      cfg.util.generateFile(getDynDistFile(cfg, dynFile), dynRes);        
 
     } catch (e) {
       console.log(colorRed(`ERROR: Processing file: ${dynFile}\n${e}`));
@@ -110,6 +121,7 @@ function getDynDistFile (cfg, dynFile) {
   return dynFile
     .replace(cfg.srcdynDirRel, cfg.distDirRel)
     .replace(/\.(js|ts)/,'')
+    .replace(/\.(md)/,'.html')
     .replace(/\(.*\)/,'');
 }
 
@@ -157,7 +169,7 @@ export function getAllDynamicFiles (cfg) {
   try {
     // all /dynamic .js|.ts files not in a path with '_' 
     // sorted from deeper path to shallower, so summary pages are processed last
-    const dynFiles = [...walkSync(cfg.srcdynDir,{ exts:['js','ts']} )]
+    const dynFiles = [...walkSync(cfg.srcdynDir,{ exts:['js','ts','md']} )]
       .map(e=> slashJoin( e.path))
       .filter(page=>!(page.replace(cfg.rootDir,'')).includes('_'))
       .sort(pathSort);
@@ -167,6 +179,23 @@ export function getAllDynamicFiles (cfg) {
     Deno.exit(1)
   }
 }
+
+
+export async function processMD (cfg, md) {
+
+  console.log(cfg.util.unindent(md))
+  let {frontmatter, content} = cfg.util.mdParts(cfg.util.unindent(md))
+
+  
+  frontmatter = Object.assign({title:'title', layout:'main'}, frontmatter);
+  const layout = await cfg.util.importPart(`layouts/${frontmatter.layout}.js`);
+  return layout({
+    title: frontmatter.title,
+    body : cfg.util.marked(content)
+  })
+
+}
+
 
 
 // -- incremental helpers
@@ -196,18 +225,21 @@ export function getSrcType (cfg, file) {
   }
 
   if (relFile.includes('_') 
-    && path.basename(relFile).match(/\.(ts|js)$/)) { 
+    && path.basename(relFile).match(/\.(js|ts|md)$/)) { 
       // .js/.ts file inside _data foldder
       return 'ignored'; 
   }
 
   if (relFile.includes('_')) { return 'dynData'; }
 
-  if (path.basename(relFile).match(/\..*\.(ts|js)$/)) {
+  if ( 
+    path.basename(relFile).endsWith('.md')
+    || path.basename(relFile).match(/\..*\.(js|ts)$/) // xxx.css.js, xxx.html.js, etc
+  ) {    
     return 'dynSimple'
   }
 
-  if (path.basename(relFile).match(/\.(ts|js)$/)) {
+  if (path.basename(relFile).match(/\.(js|ts)$/)) {
     return 'ignored';  // old multi-generator
   }
   
@@ -219,7 +251,7 @@ export function getDataBuilder (filePath) {
   const parentBuilder = [...Deno.readDirSync(parentBuilderDir)]
     .filter(
       d=>d.isFile 
-      && d.name.match(/\.(js|ts)$/) 
+      && d.name.match(/\.(js|ts|md)$/) 
       && !d.name.match(/_test/)
     )[0].name;
   return parentBuilderDir + parentBuilder;

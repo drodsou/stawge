@@ -3,6 +3,7 @@ import {red as colorRed, green as colorGreen} from 'https://deno.land/std/fmt/co
 import marked from 'https://unpkg.com/marked@1.0.0/lib/marked.esm.js';
 import mdParts from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/markdown/md_parts.ts';
 import {ensureDirSync} from 'https://deno.land/std/fs/ensure_dir.ts';
+import {unindent} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/unindent/mod.ts';
 import VERSION from './version.js';
 
 export default async function getConfig() {
@@ -19,6 +20,7 @@ export default async function getConfig() {
   cfg.distDir = cfg.rootDir + cfg.distDirRel;
   cfg.port = 8010;
   cfg.changedEvts = [];
+  cfg.importRound = 1; // incremented on each build call to prevent cache
   cfg.util = createUtil(cfg);
 
   return cfg;
@@ -31,7 +33,7 @@ function createUtil (cfg) {
     importPart : async (part)=>{
       return (await import('file://' 
         + cfg.srcdynDir + '/_parts/' 
-        + part + '?' + Math.random()
+        + part + '?' + cfg.importRound
       )).default;
     },
     generateFile: (distFile, content) =>{
@@ -50,7 +52,9 @@ function createUtil (cfg) {
     },
     marked: marked,
     mdTitle: (md)=>md.trim().match(/\# (.*)/)[1],
-    mdParts: mdParts
+    mdParts: mdParts,
+
+    unindent
   }
 }
 

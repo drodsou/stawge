@@ -1,6 +1,5 @@
 //import {watch} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/watch_throttled/mod.ts';
 import {watch} from '../denolib/ts/watch_throttled/mod.ts';
-import {unindent} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/unindent/mod.ts';
 // import {httpLiveServerStart, httpLiveServerReload} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/http_live_server/mod.js'
 import {httpLiveServerStart, httpLiveServerReload} from '../denolib/ts/http_live_server/mod.js';
 import {slashJoin} from 'https://raw.githubusercontent.com/drodsou/denolib/master/ts/slash_join/mod.ts';
@@ -21,15 +20,14 @@ if (['version', '-v', '--version'].includes(Deno.args[0])) {
 
 // -- help
 if (['help'].includes(Deno.args[0])) {
-  console.log(unindent(`
-  Stawge commands:
-    stawge init    : create sample project
-    stawge         : build project and watch for changes
-    stawge build   : build project once
-    stawge version : show version
-    stawge help    : show this help
-  
-  To view resulting site use eg Live Server extension for VSCode
+  console.log(cfg.util.unindent(`
+    Stawge commands:
+      stawge init    : create sample project
+      stawge         : build project and watch for changes
+      stawge build   : build project once
+      stawge version : show version
+      stawge help    : show this help
+
   `));
   Deno.exit(0);
 } 
@@ -91,7 +89,7 @@ watch({dirs:[cfg.srcDir], exclude:[], options:{throttle:50}, fn: async (changedE
   cfg.changedEvts = changedEvts;
   const buildResult = await build(cfg);
   // httpLiveServerReload("reload " + (changedFile.path.includes('.css') ? 'css' : 'js'));
-  if (buildResult) { httpLiveServerReload("reload"); }
+  if (buildResult) { httpLiveServerReload("window.location.reload()"); }
 }});
 
 // -- live server start

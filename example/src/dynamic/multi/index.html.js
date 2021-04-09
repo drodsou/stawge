@@ -34,7 +34,6 @@ export default async function(util, changedEvt) {
   return layout({
     title: 'Multi index',
     body: `
-      <h1>Multi index B</h1>
       <ul class="blog-list">
         ${data.map(d=>`
           <li><a href="/multi/${d.title}.html">${d.title}</a></li>

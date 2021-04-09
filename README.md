@@ -2,9 +2,9 @@
 - rootUrl (add to layout as variable)
 - better example
 - stawge init
+- import main layout from sublayout via util.import so incremental changes work
 
 maybe
-- auto generate .md ?
 - auto clean dist dir? danger!
 - incremental (check dependencies against allGenerated?)
 - less verbose build watch
@@ -13,6 +13,7 @@ maybe
 # docs
 
 ## done
+- auto generate .md ?
 - watch build
 - no single exec (damn, no imports from executable...)
 
