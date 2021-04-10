@@ -1,13 +1,17 @@
 
-// TODO: async import() so it works on main.js incremental reload, using cfg.util.importRound
+const __dirname = new URL('.', import.meta.url).pathname;
 
-import layoutMain from './main.js';
-export default (props) => layoutMain({
-  ...props, 
-  body: /*html*/`
-    <div class="post-container">
-      ${props.body}
-    </div>
-  `
-});
+export default (props) => {
+  // force re-import each time so incremental modification of main layout is reflected here too
+  // TODO: make this more elegant/performant with stawge util.importPart ?
+  const layoutMain = await import(`file://${__dirname}/main.js?${Math.random()}`);
+  return layoutMain({
+    ...props, 
+    body: /*html*/`
+      <article class="post-container">
+        ${props.body}
+      </article>
+    `
+  }) 
+};
 

@@ -18,6 +18,7 @@ export default async function build(cfg) {
   ) {
     copyStaticFiles(cfg, getAllStaticFiles(cfg));
     await buildDynamicFiles(cfg, getAllDynamicFiles(cfg));
+    generateSearchJSON(cfg);
     buildDone(timeStart);
     return true;
   }
@@ -183,7 +184,6 @@ export function getAllDynamicFiles (cfg) {
 
 export async function processMD (cfg, md) {
 
-  console.log(cfg.util.unindent(md))
   let {frontmatter, content} = cfg.util.mdParts(cfg.util.unindent(md))
 
   
@@ -196,6 +196,43 @@ export async function processMD (cfg, md) {
 
 }
 
+
+export function generateSearchJSON (cfg, generateFile=true) {
+
+  const distHtmlPaths = [...walkSync(cfg.distDir,{ exts:['html']} )]
+    .map(e => slashJoin(e.path) );
+
+  const searchJSON = [];
+
+  let distHtmlPath
+
+  for (distHtmlPath of distHtmlPaths) {
+    try {
+      const distHtmlContent = Deno.readTextFileSync(distHtmlPath)
+      const distHtmlTitle = distHtmlContent.match(/<title[^>]*>([^]*)<\/title>/)[1];
+      const distHtmlBody = distHtmlContent.match(/<main[^>]*>([^]*)<\/main>/)[1]
+        .replace(/(<script|script>|<style|style>)/g,"∟").replace(/∟[^∟]*∟/g,"_")
+        .replace(/<[^>]*>/g, ' ')     // html tags
+        .replace(/\&[\S]+;/g, ' ')    // html entities
+        .replace(/[\s]+/g, ' ')       // newlines, tabs
+        .replace(/[,.:;"'?¿]/g,'')    // punctuation
+        .trim();
+    
+      searchJSON.push({
+        url: distHtmlPath.replace(cfg.distDir,''),
+        title: distHtmlTitle,
+        body: distHtmlBody
+      });
+    } catch (e) {
+      console.log(colorYellow(`• generateSearchJSON: omiting html file without <main> section: ${distHtmlPath}`))
+    }
+  }
+
+  if (generateFile) { cfg.util.generateFile(`${cfg.distDir}/search.json`, JSON.stringify(searchJSON,null,2)); }
+
+  return searchJSON
+  
+}
 
 
 // -- incremental helpers

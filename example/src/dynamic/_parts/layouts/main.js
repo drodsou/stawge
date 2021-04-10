@@ -20,10 +20,10 @@ export default function (props) {
       <li><a href="/multi">multi</a></li>
     </ul>
   </nav>
-  <div class="main-container">
+  <main class="main-container">
     <h1>${props.title}</h1>
     ${props.body||''}
-  </div>
+  </main>
 </body>
 </html>
 

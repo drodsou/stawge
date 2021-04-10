@@ -9,7 +9,7 @@ export default async function(util, changedEvt) {
         resolve(JSON.parse(Deno.readTextFileSync(mySrcDir + '/_data/data.json')));
       }, 500);
     })
-  };
+  }
 
   // // -- manage incremental removed pages
   // if (changedEvt.kind === 'remove') {
@@ -18,19 +18,20 @@ export default async function(util, changedEvt) {
   //   ret.push({distFile: `${blogDistDir}/${removedSlug}/index.html`, content: ''});
   // }
 
-  // -- build all md pages
+  // -- build all data pages
   const layout = await util.importPart('layouts/main.js');
 
-  let data = await fakeDataFetch();
+  const data = await fakeDataFetch();
 
   for (const entry of data) {
-    let content = layout({
+    const content = layout({
       title: entry.title,
       body: entry.body
     });
     util.generateFile(`${myDistDir}/${entry.title}.html`,content);
   }
-  // -- add index
+
+  // -- add index page
   return layout({
     title: 'Multi index',
     body: `
