@@ -1,0 +1,90 @@
+.container {
+  display: flex;
+}
+
+.container .nav-left {
+  width: 250px;
+  max-width: 250px;
+}
+
+.container main {
+  flex: 1;
+}
+
+/* Remove default bullets */
+nav ul {
+  list-style-type: none;
+  margin:0;
+  padding:0;
+}
+
+/* Remove margins and padding from the parent ul */
+.menu-vertical {
+  margin: 0;
+  padding: 0;
+  border:1px solid red;
+}
+
+li {
+  border:1px solid green;
+  margin-left: 10px;
+  
+}
+
+
+.menu-vertical a {
+  margin-right: 10px;
+  width: auto;
+}
+
+.menu-vertical a {
+  text-decoration: none;
+  color:black;
+}
+
+.menu-vertical a {
+  color: black;
+}
+
+
+/* Style the caret/arrow */
+.menu-vertical-nested {
+  cursor: pointer;
+  user-select: none; /* Prevent text selection */
+  position:relative;
+
+}
+
+li.menu-vertical-nested span.text {
+  display: inline-block;
+  width:90%;
+}
+
+li.menu-vertical-nested span.caret {
+  display: inline-block;
+  width:10px;
+}
+
+/* Create the caret/arrow with a unicode, and style it */
+/* li.menu-vertical-nested span::after {
+  content: "\25B6";
+  color: black;
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 12px;
+} */
+
+/* Rotate the caret/arrow icon when clicked on (using JavaScript) */
+/* .menu-vertical-nested.open span::after {
+  transform: rotate(90deg);
+} */
+
+/* Hide the nested list */
+.menu-vertical-nested ul {
+  display: none;
+}
+
+/* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
+.menu-vertical-nested.open ul {
+  display: block;
+}

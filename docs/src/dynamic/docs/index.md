@@ -1,5 +1,6 @@
 ---
 title: docs home
+layout: docs
 ---
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam finibus, libero a porttitor condimentum, mi erat pellentesque felis, et bibendum odio neque et ligula. Praesent quis sapien sollicitudin, ultrices felis vel, interdum odio. Fusce accumsan nibh tellus. Duis eu laoreet odio. Ut ante magna, lacinia a mi vel, lacinia imperdiet purus. Donec vel arcu eleifend, imperdiet metus sit amet, tincidunt erat. Mauris ultricies dapibus orci, nec ultrices nisl sollicitudin id. Donec at posuere dolor. Etiam vel magna tempor, pretium tellus eget, aliquam urna. Aliquam sagittis, leo nec vestibulum tincidunt, turpis nisl posuere nisi, aliquet consequat risus purus et magna.
