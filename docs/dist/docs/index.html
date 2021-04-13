@@ -13,27 +13,47 @@
   <div class="container">
     <nav class="nav-left"> 
       <ul class="menu-vertical">
-        <li><a href="/one">one</a></li>
+        
+      <li>
+        <span class="caret"><i>&nbsp;</i></span><a href="/docs/one">one</a>
+      </li>
 
         
-      <li class="menu-vertical-nested"><span class="text">two</span><span class="caret">►<span>
+      <li class="menu-vertical-nested">
+        <span class="caret"><i>►</i></span><span class="text">two</span>
         <ul>
-        <li><a href="/two/a">two-a</a></li>
-<li><a href="/two/b">two-b</a></li>
+        
+      <li>
+        <span class="caret"><i>&nbsp;</i></span><a href="/docs/two/a">two-a</a>
+      </li>
+
+      <li>
+        <span class="caret"><i>&nbsp;</i></span><a href="/docs/two/b">two-b</a>
+      </li>
         </ul>
       </li>
     
 
         
-      <li class="menu-vertical-nested"><span class="text">three</span><span class="caret">►<span>
+      <li class="menu-vertical-nested">
+        <span class="caret"><i>►</i></span><span class="text">three</span>
         <ul>
-        <li><a href="/three/a">three-a</a></li>
-<li><a href="/three/b">three-b</a></li>
+        
+      <li>
+        <span class="caret"><i>&nbsp;</i></span><a href="/docs/three/a">three-a</a>
+      </li>
+
+      <li>
+        <span class="caret"><i>&nbsp;</i></span><a href="/docs/three/b">three-b</a>
+      </li>
         </ul>
       </li>
     
 
-        <li><a href="/four">four</a></li>
+        
+      <li>
+        <span class="caret"><i>&nbsp;</i></span><a href="/docs/four">four</a>
+      </li>
       </ul>
     </nav>
     <main>
@@ -50,10 +70,27 @@
     document.querySelector(".menu-vertical").addEventListener('click',e=>{
       if (e.target.localName === "span") {
         let wasOpen = e.target.parentElement.classList.contains("open");
-        document.querySelectorAll(".menu-vertical-nested").forEach(e=>e.classList.remove("open"));
+        //document.querySelectorAll(".menu-vertical-nested").forEach(e=>e.classList.remove("open"));
         if (!wasOpen) e.target.parentElement.classList.add("open");
       }
     });
+
+    let currentPage = window.location.pathname.replace(/\/(index.html)*$/,'');
+    let currentMenuSelector = 'a[href$="' + currentPage + '"]'
+    let currentMenu = document.querySelector(currentMenuSelector).parentElement;
+    currentMenu.classList.add("current");
+    
+    currentMenu.innerHTML += "<b>penacho</b>" // TODO list of ##
+
+    // TODO: dark / light theme
+
+    currentMenuContainer = currentMenu.parentElement.parentElement;
+    if (currentMenuContainer.classList.contains("menu-vertical-nested")) {
+      currentMenuContainer.classList.add("open");
+      currentMenuContainer.classList.add("current");
+    }
+
+
 
   </script>
 </body>

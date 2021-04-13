@@ -1,41 +1,68 @@
 
-// const __dirname = new URL('.', import.meta.url).pathname;
-// const layoutMain = await import(`file://${__dirname}/main.js?${Math.random()}`);
-
-export default function (props) {
-  return /*html*/`
 
 <!DOCTYPE html>
-<html lang="${props.lang||'en'}">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/assets/index.css"/>
-  <title>${props.title||'Document'}</title>
-  ${props.head||''}
+  <title>two-a</title>
+  
 </head>
 <body>
   <div class="container">
     <nav class="nav-left"> 
       <ul class="menu-vertical">
-        ${mItem('one', '/docs/one')}
+        
+      <li>
+        <span class="caret"><i>&nbsp;</i></span><a href="/docs/one">one</a>
+      </li>
 
-        ${mItem('two', [
-          ['two-a', '/docs/two/a'],
-          ['two-b', '/docs/two/b'],
-        ])}
+        
+      <li class="menu-vertical-nested">
+        <span class="caret"><i>►</i></span><span class="text">two</span>
+        <ul>
+        
+      <li>
+        <span class="caret"><i>&nbsp;</i></span><a href="/docs/two/a">two-a</a>
+      </li>
 
-        ${mItem('three', [
-          ['three-a', '/docs/three/a'],
-          ['three-b', '/docs/three/b'],
-        ])}
+      <li>
+        <span class="caret"><i>&nbsp;</i></span><a href="/docs/two/b">two-b</a>
+      </li>
+        </ul>
+      </li>
+    
 
-        ${mItem('four', '/docs/four')}
+        
+      <li class="menu-vertical-nested">
+        <span class="caret"><i>►</i></span><span class="text">three</span>
+        <ul>
+        
+      <li>
+        <span class="caret"><i>&nbsp;</i></span><a href="/docs/three/a">three-a</a>
+      </li>
+
+      <li>
+        <span class="caret"><i>&nbsp;</i></span><a href="/docs/three/b">three-b</a>
+      </li>
+        </ul>
+      </li>
+    
+
+        
+      <li>
+        <span class="caret"><i>&nbsp;</i></span><a href="/docs/four">four</a>
+      </li>
       </ul>
     </nav>
     <main>
-      <h1>${props.title}</h1>
-      ${props.body||''}
+      <h1>two-a</h1>
+      <h2 id="two-a-one">two-a-one</h2>
+<p>some</p>
+<h2 id="two-a-two">two-a-two</h2>
+<p>thing</p>
+
     </main>
   </div>
 
@@ -48,7 +75,7 @@ export default function (props) {
       }
     });
 
-    let currentPage = window.location.pathname.replace(/\\/(index.html)*$/,'');
+    let currentPage = window.location.pathname.replace(/\/(index.html)*$/,'');
     let currentMenuSelector = 'a[href$="' + currentPage + '"]'
     let currentMenu = document.querySelector(currentMenuSelector).parentElement;
     currentMenu.classList.add("current");
@@ -69,24 +96,4 @@ export default function (props) {
 </body>
 </html>
 
-  `;
-}
-
-function mItem(text,dest){
-  if (typeof dest === "string") {
-    return `
-      <li>
-        <span class="caret"><i>&nbsp;</i></span><a href="${dest}">${text}</a>
-      </li>`
-  } else {
-    return `
-      <li class="menu-vertical-nested">
-        <span class="caret"><i>►</i></span><span class="text">${text}</span>
-        <ul>
-        ${dest.map(d=>mItem(d[0],d[1])).join('\n')}
-        </ul>
-      </li>
-    `;
-  }
-
-}
+  
