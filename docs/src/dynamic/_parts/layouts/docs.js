@@ -6,7 +6,7 @@ export default function (props) {
   return /*html*/`
 
 <!DOCTYPE html>
-<html lang="${props.lang||'en'}">
+<html theme="light" lang="${props.lang||'en'}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,6 +17,7 @@ export default function (props) {
 <body>
   <div class="container">
     <nav class="nav-left"> 
+      <button>theme</button>
       <ul class="menu-vertical">
         ${mItem('one', '/docs/one')}
 
@@ -53,7 +54,14 @@ export default function (props) {
     let currentMenu = document.querySelector(currentMenuSelector).parentElement;
     currentMenu.classList.add("current");
     
-    currentMenu.innerHTML += "<b>penacho</b>" // TODO list of ##
+    let h2Elements = [...document.querySelectorAll("h2")];
+    let h2Links = '';
+    h2Links += '<ul class="sections">';
+    h2Links += h2Elements
+      .map(h2=>'<li><a href="#'+ h2.id +'">'+ h2.innerText +'</a></li>')
+      .join('');
+    h2Links += '</ul>';
+    currentMenu.innerHTML += h2Links
 
     // TODO: dark / light theme
 
@@ -63,7 +71,15 @@ export default function (props) {
       currentMenuContainer.classList.add("current");
     }
 
-
+    // --theme
+    document.querySelector("nav button").addEventListener("click",()=>{
+      let e = document.querySelector("html")
+      if (e.getAttribute("theme") === "dark") {
+        e.setAttribute("theme","light")
+      } else {
+        e.setAttribute("theme","dark")
+      }
+    })
 
   </script>
 </body>

@@ -2,24 +2,62 @@
   box-sizing: border-box;
 }
 
+
+
 body, html {
-  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+--color-bg: white;
+--color-fg: black;
+--color-primary: red;
+}
+
+html[theme=dark] {
+  --color-bg: black;
+  --color-fg: white;
+  --color-primary: red;
+}
+
+body {
+  height: 100vh;
+  --left-width: 200px;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+}
+
+@media (max-width: 800px) {
+  body {
+    --left-width: 0px;
+  }
 }
 
 .container {
   display: flex;
+  position: relative;
   height: 100%;
 }
 
 .container .nav-left {
-  min-width: 200px;
-  max-width: 30vw;
+  width: var(--left-width);
+  /* min-width: 200px;
+  max-width: 30vw; */
   height:100%;
   background-color: hsl(0, 0%, 70%);
+  position: fixed;
+  overflow-x: hidden;
+  overflow-y: scroll;
 }
 
+
+
+
+
 .container main {
-  flex: 1;
+  padding-left: calc(var(--left-width) + 20px);
+  max-width:1000px;
 }
 
 /* Remove default bullets */
@@ -34,6 +72,7 @@ nav ul {
   margin: 0;
   padding: 0;
   margin-left: 1px;
+  height: 100%;
 }
 
 li {
@@ -72,8 +111,15 @@ li.menu-vertical-nested ul {
   border-left: 2px solid red;
 } */
 
-.current > span.caret, .current > span.text, .current > a {
-  color: red;
+.current > span.caret, 
+.current > span.text, 
+.current > a {
+  color: var(--color-primary);
+}
+
+nav span.text:hover, 
+nav a:hover {
+  color: var(--color-primary);
 }
 
 li.menu-vertical-nested span.text {
@@ -117,3 +163,34 @@ li.menu-vertical-nested.open span.caret i {
 .menu-vertical-nested.open ul {
   display: block;
 }
+
+ul.sections {
+  font-size: 0.5rem;
+  margin-left: 1rem;
+}
+
+
+
+/* -- scroll bar nav --*/
+/* Works on Firefox */
+nav {
+  scrollbar-width: thin;
+  scrollbar-color: orange white;
+}
+
+/* Works on Chrome, Edge, and Safari */
+nav::-webkit-scrollbar {
+  width: 5px;
+}
+
+nav::-webkit-scrollbar-track {
+  background: white;
+}
+
+nav::-webkit-scrollbar-thumb {
+  background-color: orange;
+  border-radius: 5px;
+  border: 0px solid orange;
+}
+
+
